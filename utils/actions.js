@@ -67,3 +67,5 @@ If you can't find info on exact ${city}, or ${city} does not exist, or it's popu
 export const createNewTour = async (tour) => {
   return null;
 };
+
+
