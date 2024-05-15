@@ -2,6 +2,7 @@
 
 import OpenAI from "openai";
 import prisma from "./db";
+import { revalidatePath } from "next/cache";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -18,7 +19,10 @@ export const generateChatResponse = async (chatMessages) => {
       temperature: 0,
       max_tokens: 100,
     });
-    return response.choices[0].message;
+    return {
+      message: response.choices[0].message,
+      tokens: response.usage.total_tokens,
+    };
   } catch (error) {
     return null;
   }
@@ -34,7 +38,7 @@ Once you have a list, create a one-day tour. Response should be in the following
     "country": "${country}",
     "title": "title of the tour",
     "description": "description of the city and tour",
-    "stops": ["short paragraph on the stop 1 ", "short paragraph on the stop 2","short paragraph on the stop 3"]
+    "stops": ["stop name","stop name","stop name"]
   }
 }
 If you can't find info on exact ${city}, or ${city} does not exist, or it's population is less than 1, or it is not located in the following ${country} return { "tour": null }, with no additional characters.`;
@@ -54,8 +58,7 @@ If you can't find info on exact ${city}, or ${city} does not exist, or it's popu
     if (!tourData.tour) {
       return null;
     }
-
-    return tourData.tour;
+    return { tour: tourData.tour, tokens: response.usage.total_tokens };
   } catch (error) {
     console.log(error);
     return null;
